@@ -1,10 +1,11 @@
 /* subroutine to calculate the MAX LENGHT of alternated 0's and 1's in a 32bits word */
-/* this soubroutine uses COUNT_ZERO, XOU
+/* this soubroutine uses COUNT_ZERO, COUNT_ONE, COUNT */
+/* version 2.0 */
 
 MASK .eq 0xAAAAAAAA /* 1010 1010 1010 1010 1010 1010 1010 1010 [binary] */  
 
-global BIT_SEQUENCE
-BIT_SEQUENCE:
+.global ALTERNATED_BIT_SEQUENCE
+ALTERNATED_BIT_SEQUENCE:
 
 	/* r4 will RECEIVE the INPUT number to check */
     /* r9 will hold the applied mask */
