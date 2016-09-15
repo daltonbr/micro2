@@ -1,22 +1,14 @@
- # 0 - (0,1,2,3,4,5) = 		0011 1111 = 0x3F
- # 1 - (1,2) = 				0000 0110 = 0x06
- # 2 - ( 0,1,3,4,6) = 		0101 1011 = 0x5b
- # 3 - (0,1,2,3,6) = 		0100 1111 = 0x4F
- # 4 - (1,2,5,6) = 			0110 0110 = 0x66
- # 5 - (0,2,3,5,6) = 		0110 1101 = 0x6d
- # 6 - (0,2,3,4,5,6) = 		0111 1101 = 0x7d
- # 7 - (0,1,2) = 			0000 0111 = 0x07
- # 8 - (0,1,2,3,4,5,6) =	0111 1111 = 0x7f
- # 9 - (0,1,2,3,5,6) = 		0110 1111 = 0x6f
- # a - (0,1,2,4,5,6) = 		0111 0111 = 0x77
- # b - (2,3,4,5,6) = 		0111 1100 = 0x7c
- # c - (3,4,6) = 			0101 1000 = 0x58
- # d - (1,2,3,4) = 			0001 1110 = 0x1e
- # e - (0,3,4,5,6) = 		0111 1001 = 0x79
- # f - (0,4,5,6) = 			0111 0001 = 0x71
+/*
+ * Lab4 - part3
+ * 7- display segment accumulator
+ *
+ * Authors:
+ * Dalton Lima @daltonbr
+ * Giovanna Cazelato @giovannaC
+ * Lucas Pinheiro @lucaspin
+ *
+ */
 
-
-#.equ ZERO 00000000
 .equ MASK_HEX0 0x000000FF
 .equ MASK_HEX1 0x0000FF00
 .equ MASK_HEX2 0x00FF0000
@@ -35,66 +27,71 @@ _start:
 	movia r19, 0x10000020   # base adress HEX0-3
 
 Loop:
-	ldwio r20, 12(r11)       # load edgecapture PushButton
-	beq r20, r0, Loop	   # if (PB == 0){ goto Loop }
+	ldwio r20, 12(r11)      # load edgecapture PushButton
+	beq r20, r0, Loop       # if (PB == 0){ goto Loop }
 	stwio r0, 12(r11)       # reset the edgecapture PushButton
-	ldwio r21, 0(r17)        # data
-	add r16, r16, r21         # add to the accumulator
+	ldwio r21, 0(r17)       # data
+	add r16, r16, r21       # add to the accumulator
+	stwio r16, 0(r18)       # store accumulator in greenled (just for fun)
 
-    movia r22, MASK_HEX0		
-    and r23, r16, r22
-    
-    add r4, r0, r23         # move the accumulator to r17 (will be converted to 7-display seg format)
+    # The accumulador (r16) is already calculated here
+    # it will be divided in 4 parts (1byte each)
+    # switched to the rightmost position, converted in BIN_TO_HEX
+    # bringed back to their original position
+    # merged in the HEX3-0 base address
 
-    call BIN_TO_HEX
+    ##########
+	# (HEX0) #
+	##########
 
-    and r23, r2, r22
+    movia r22, MASK_HEX0    # r22 will hold our current mask
+    and r23, r16, r22       # applying the mask to the accumulator
+    add r4, r0, r23         # passing the value as parameter in r4
+    call BIN_TO_HEX         # output in r2
+    and r23, r2, r22        # r23 = output masked
+    stwio r23, 0(r19)       # store hexcodes in 7display-led (HEX0)
 
- 	stwio r23, 0(r19)	   # store accumulutor in led
-	stwio r16, 0(r18)		   # store accumulator in greenled
+    ##########
+	# (HEX1) #
+	##########
 
-	#################################
-	# parsing accumulator, converting, and sending to the proper 7-display segment (HEX1)
-	#################################
+    movia r22, MASK_HEX1    # r22 will hold our current mask
+    and r23, r16, r22       # applying the mask to the accumulator
+    srli r23, r23, 8        # moving the value 1 byte to the RIGHT
+    add r4, r0, r23         # passing the value as parameter in r4
+    call BIN_TO_HEX         # output in r2
+    and r23, r2, r22        # r23 = output masked
+    slli r23, r23, 8        # moving back the converted value to original position (LEFT 1 byte)
+    add r23, r23, r19       # merge the new HEX1 in the output
+    stwio r23, 0(r19)       # store hexcodes in 7display-led (HEX1)
 
-	movia r22, MASK_HEX1		# r10 must be saved by the caller. Here, we are not saving it, because we are lazy
-    and r23, r16, r22    
-    srli r23, r23, 8
+    ##########
+	# (HEX2) #
+	##########
 
-    add r4, r0, r23         # move the accumulator to r17 (will be converted to 7-display seg format)
+    movia r22, MASK_HEX2    # r22 will hold our current mask
+    and r23, r16, r22       # applying the mask to the accumulator
+    srli r23, r23, 16       # moving the value 2 bytes to the RIGHT
+    add r4, r0, r23         # passing the value as parameter in r4
+    call BIN_TO_HEX         # output in r2
+    and r23, r2, r22        # r23 = output masked
+    slli r23, r23, 16       # moving back the converted value to original position (LEFT 2 bytes)
+    add r23, r23, r19       # merge the new HEX2 in the output
+    stwio r23, 0(r19)       # store hexcodes in 7display-led (HEX2)
 
-    call BIN_TO_HEX
+    ##########
+	# (HEX3) #
+	##########
 
-    and r23, r2, r22
-
- 	slli r23, r23, 8
-    stwio r23, 0(r19)	   # store accumulutor in led
-	stwio r16, 0(r18)		   # store accumulator in greenled
-
-	#################################
-	# parsing accumulator, converting, and sending to the proper 7-display segment (HEX1)
-	#################################
-
-	movia r10, MASK_HEX1		# r10 must be saved by the caller. Here, we are not saving it, because we are lazy
-    and r23, r16, r10
-    srli r23, r23, 8
-    
-    add r4, r0, r23         # move the accumulator to r17 (will be converted to 7-display seg format)
-
-    call BIN_TO_HEX
-
-    and r22, r2, r10
-
- 	slli r22, r22, 8
-    stwio r22, 0(r19)	   # store accumulutor in led
-	stwio r23, 0(r18)		   # store accumulator in greenled
-
-
-
-
-
-	# GreenLed => HexDisp => BCD
-	# 0000 => 0x0 => 3f
+    movia r22, MASK_HEX3    # r22 will hold our current mask
+    and r23, r16, r22       # applying the mask to the accumulator
+    srli r23, r23, 24       # moving the value 3 bytes to the RIGHT
+    add r4, r0, r23         # passing the value as parameter in r4
+    call BIN_TO_HEX         # output in r2
+    and r23, r2, r22        # r23 = output masked
+    slli r23, r23, 24       # moving back the converted value to original position (LEFT 3 bytes)
+    add r23, r23, r19       # merge the new HEX3 in the output
+    stwio r23, 0(r19)       # store hexcodes in 7display-led (HEX3)
 
 	br Loop
 
