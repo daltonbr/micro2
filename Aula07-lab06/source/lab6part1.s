@@ -1,91 +1,101 @@
 /**********************************************
+ * Lab 06 - Audio CODEC - sep, 28th, 2016     *
+ * Part 1 - Recording and playing audio       *
+ * version 1.0 - 9/29/16 (not tested)         *
  * Authors:                                   *
- * Dalton Lima @daltonbr                      *
- * Giovanna Cazelato @giovannaC               *
- * Lucas Pinheiro @lucaspin                   *
+ * Dalton Lima r12daltonbr                    *
+ * Giovanna Cazelato r12giovannaC             *
+ * Lucas Pinheiro r12lucaspin                 *
  *********************************************/
- /**********************************************
- *  Audio port IRQ 6                           *
- *  audio base adress 0x10003040 ~ 0x1000304F  *
- *  44.1KHz = 0xAC44                           *
- *  22KHz = 0x55F0                             *
- *  SRAM base adress 0x08000000 ~ 0x0807FFFF   *
- *  96KHz x 3(sec) = 0x46500                   *
- *  1111 1111 0000 0000 = 0XFF00 //mask FIFO   *
- *	0000 0000 0000 0100 = 0x4    //mask CR     *
- *  0000 0000 0000 1000 = 0x8    //mask CW     *
- **********************************************/
-.data  # .org?
-buffer:
-.word 
-.skip 0x46500
-.equ memory_base_address 0x46500  # starting point of the audio
+ /******************************************************
+ *  Audio port IRQ 6                                   *
+ *  audio base address 0x10003040 ~ 0x1000304F         *
+ *  44.1KHz = 0xAC44 KHz                               *
+ *  22KHz = 0x55F0 KHz                                 *
+ *  Buffer size calculation                            *
+ *  96KHz x 3(sec) = 288 K samples = 0x46500 words     *  
+ *  288 K * 4 bytes = 1152 KB = 0x119400 bytes         *
+ *  1111 1111 0000 0000 = 0XFF00 //mask FIFO           *
+ *	0000 0000 0000 0100 = 0x4    //mask CR             *
+ *  0000 0000 0000 1000 = 0x8    //mask CW             *
+ ******************************************************/
 
+.org        0x500
+BUFFER_BASE_ADDRESS:
+.word 
+.skip BUFFER_SIZE   # 3000 * 96 = 288k samples = 0x46500 (or 0x119400 bytes ?) 
+END_BUFFER:
+
+.equ BUFFER_TIME,               3000                          # in miliseconds
+.equ SAMPLE_RATE,               96                            # in KHz
+.equ CR_mask,                   0x4
+.equ CW_mask,                   0x8
+.equ RALC_MASK                  0xFF00
+.equ WSLC_MASK                  0xFF00                        # used as high halfword
+.equ BUFFER_SIZE,               BUFFER_TIME * SAMPLE_RATE     # 288K
+.equ AUDIO_BASE_ADDRESS         0x10003040
+.equ PUSHBUTTON_BASE_ADDRESS    0x10000050
+
+.text                                   # executable code follows
 .global _start
 _start:
+    movia r8 , BUFFER_BASE_ADDRESS      # r8 will be a memory pointer
+	movia r9 , END_BUFFER               # r9 will check buffer overflow
+	movia r10, AUDIO_BASE_ADDRESS 	        
+	movia r11, PUSHBUTTON_BASE_ADDRESS
 
-	addi r8, r0, 0x46500    	# sampling rate / counter
-	movia r9, 0x10003040    	# base adress Audio
-	movia r10, 0x10000050   	# base adress pushbotton
-    movia r13, 0xFF00       	# mask to check FIFO empty
-    movia r16, 0x4              # mask CR
-    movia r17, 0x8              # mask CW
-
-    movia r19, memory_base_address  # r19 memory pointer
-Loop:
-	ldwio r11, 12(r10)      	# load edgecapture PushButton
-	beq r11, r0, Loop	    	# if (PB == 0) goto Loop 
-	stwio r0, 12(r10)	    	# reset PB 
+WAIT_REC_BUTTON:                        # r12 will always be TEMP register
+	ldwio r12, 12(r11)          	    # load edgecapture PushButton
+	beq r12, r0, WAIT_REC_BUTTON        # if (PB == 0) goto WAIT_REC_BUTTON 
+	stwio r0, 12(r11)	    	        # reset PB 
 	
-	/* Reset buffer */
-	ldwio r18, 0(r9)			#r18 is temp
-	or r18, r18, r16            # mask to CR
-	stwio r18, 0(r9)			# CR = 1
-	sub r18, r18, r16	        # CR = 0
-	stwio r18, 0(r9)
+/* Reseting buffer */
+	ldwio r12, 0(r10)
+	ori r12, r12, CR_mask
+	stwio r12, 0(r10)	    		    # CR = 1
+	subi r12, r12, CR_mask          
+	stwio r12, 0(r10)                   # CR = 0
 
-	CHECK_FIFO_EMPTY:
-		addi r15, r9, 4     	# load FIFO space register
-		and r14, r13, r15   	# apply mask to check RARC
-		beq r14, r0, CHECK_FIFO_EMPTY # while FIFO == 0 loops
-		br RECORD
+CHECK_FIFO_EMPTY:                       
+    ldwio r12, 4(r10)     	            # load Fifospace register
+    andi r12, r12, RALC_MASK   	        # apply mask to check RARC
+    beq r12, r0, CHECK_FIFO_EMPTY       # while FIFO == 0 loops
+    br RECORD
 
-	RECORD:                 	# 3s loop		
-		ldwio r12, 4(r9)    	# read sample
-		stw r12, 0(r19)			# store sample in memory
-		addi r19, r19, 4 		# advance the memory pointer
-		addi r8, r8, -1     	# dec counter
-		bne r8, r0, CHECK_FIFO  	# if (couter != 0) goto CHECK_FIFO
+RECORD:                 	            # 3s loop		
+    ldwio r12, 4(r10)    	            # read sample
+    stw r12, 0(r8)			            # store sample in memory
+    addi r8, r8, 4  		            # advance the memory pointer
+    bne r8, r9, RECORD                  # while (memPointer != END_BUFFER) loops
 
-# at this point the sound was recorded
-# now we gonna play that mothafuck
+/* at this point the sound was recorded */
 
-play_loop:
-	ldwio r11, 12(r10)      	# load edgecapture PushButton
-	beq r11, r0, play_loop	    	# if (PB == 0) goto play_loop 
-	stwio r0, 12(r10)	    	# reset PB 
+WAIT_PLAY_BUTTON:
+    ldwio r12, 12(r11)              	# load edgecapture PushButton
+    beq r12, r0, WAIT_PLAY_BUTTON       # if (PB == 0) goto WAIT_PLAY_BUTTON 
+    stwio r0, 12(r11)	              	# reset PB 
 	
-	/* Reset buffer */
-	ldwio r18, 0(r9)			# r18 is temp
-	or r18, r18, r17			# mask to CW            
-	stwio r18, 0(r9)			# CW = 1
-	sub r18, r18, r17	        # CW = 0
-	stwio r18, 0(r9)
-	movia r19, memory_base_address  # r19 reset the memory pointer
-	addi r8, r0, 0x46500    	# reset sampling rate / counter
+/* Reset buffer */
+	ldwio r12, 0(r10)			   
+	ori r12, r12, CW_mask            
+	stwio r12, 0(r10)			        # CW = 1
+	subi r12, r12, CW_mask      
+	stwio r12, 0(r10)                    # CW = 0
+	movia r8, BUFFER_BASE_ADDRESS       # reset the memory pointer (r8)
 
-	CHECK_FIFO_FULL:
-		addi r15, r9, 4     			# load FIFO space register
-		andi r14, r15, 0xFF000000   	# apply mask to check WSLC | r14 is temp
-		beq r14, r0, CHECK_FIFO_FULL # while FIFO == 0 loops
-		br play
+CHECK_FIFO_FULL:
+    addi r12, r10, 4     			    # load Fifospace register
+    andhi r12, r12, WSLC_MASK   	    # apply mask to check WSLC
+    beq r12, r0, CHECK_FIFO_FULL        # while FIFO == 0 loops
+    br PLAY
 
-	play:
-		ldw r18, 0(r19)		# temp = data (sample)
-		stwio r18, 12(r9)	# stored 1 sample in the outpub buffer
-		addi r19, r19, 4  	# advance the memory pointer
-		addi r8, r8, -1     # dec counter
-		bne r8, r0, CHECK_FIFO_FULL # check if all the samples were loaded
+PLAY:
+    ldw r12, 0(r8)		                # temp = sample
+    stwio r12, 12(r10)	                # stored 1 sample in the output buffer
+    addi r8, r8, 4  	                # advance the memory pointer
+    bne r8, r9, CHECK_FIFO_FULL         # while (memPointer != END_BUFFER) loops
 
 END:
 	br END
+
+.end
