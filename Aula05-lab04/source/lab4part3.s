@@ -1,13 +1,12 @@
-/*
- * Lab4 - part3
- * 7- display segment accumulator
- *
- * Authors:
- * Dalton Lima @daltonbr
- * Giovanna Cazelato @giovannaC
- * Lucas Pinheiro @lucaspin
- *
- */
+/************************************************************************
+ * Lab4 - part3 - Parallel I/O                                          *
+ * 7- display segment accumulator (version with polling)                *
+ *                                                                      *
+ * Authors:                                                             *
+ * Dalton Lima @daltonbr                                                *
+ * Giovanna Cazelato @giovannaC                                         *
+ * Lucas Pinheiro @lucaspin                                             *
+ ***********************************************************************/
 
 .equ MASK_HEX0 0x000000FF
 .equ MASK_HEX1 0x0000FF00
@@ -21,10 +20,10 @@ _start:
 	add fp, sp, r0
 
 	add r16, r0, r0         # reset accumulator
-	movia r17, 0x10000040   # base adress SW0-7
-	movia r18, 0x10000010   # base adress greenled
-	movia r11, 0x10000050   # base adress pushbutton
-	movia r19, 0x10000020   # base adress HEX0-3
+	movia r17, 0x10000040   # base address SW7-0
+	movia r18, 0x10000010   # base address greenled
+	movia r11, 0x10000050   # base address pushbutton
+	movia r19, 0x10000020   # base address HEX3-0
 
 Loop:
 	ldwio r20, 12(r11)      # load edgecapture PushButton
