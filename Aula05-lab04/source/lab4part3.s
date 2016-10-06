@@ -1,5 +1,7 @@
 /************************************************************************
- * Lab4 - part3 - Parallel I/O                                          *
+ * Lab4 - part3 - Parallel I/O
+ * Version 2.0 - 2016/10/05
+ * Fully Tested                                                         *
  * 7- display segment accumulator (version with polling)                *
  *                                                                      *
  * Authors:                                                             *
@@ -8,10 +10,10 @@
  * Lucas Pinheiro @lucaspin                                             *
  ***********************************************************************/
 
-.equ MASK_HEX0 0x000000FF
-.equ MASK_HEX1 0x0000FF00
-.equ MASK_HEX2 0x00FF0000
-.equ MASK_HEX3 0xFF000000
+.equ MASK_HEX0, 0x0000000F
+.equ MASK_HEX1, 0x000000F0
+.equ MASK_HEX2, 0x00000F00
+.equ MASK_HEX3, 0x0000F000
 
 .global _start
 _start:
@@ -43,11 +45,11 @@ Loop:
 	# (HEX0) #
 	##########
 
-    movia r22, MASK_HEX0    # r22 will hold our current mask
+    movia r22, MASK_HEX0    # r22 will hold our current mask, the input is 4 bits long
     and r23, r16, r22       # applying the mask to the accumulator
     add r4, r0, r23         # passing the value as parameter in r4
     call BIN_TO_HEX         # output in r2
-    and r23, r2, r22        # r23 = output masked
+    add r23, r2, r0         # r23 = return of bin_to_hex
     stwio r23, 0(r19)       # store hexcodes in 7display-led (HEX0)
 
     ##########
@@ -56,12 +58,13 @@ Loop:
 
     movia r22, MASK_HEX1    # r22 will hold our current mask
     and r23, r16, r22       # applying the mask to the accumulator
-    srli r23, r23, 8        # moving the value 1 byte to the RIGHT
+    srli r23, r23, 4        # moving the value 1 byte to the RIGHT
     add r4, r0, r23         # passing the value as parameter in r4
     call BIN_TO_HEX         # output in r2
-    and r23, r2, r22        # r23 = output masked
+    add r23, r2, r0         # Load only the wanted value
     slli r23, r23, 8        # moving back the converted value to original position (LEFT 1 byte)
-    add r23, r23, r19       # merge the new HEX1 in the output
+    ldw r22, 0(r19)         # put the contents of r19 (value in HEX3-0) in the temp register
+    add r23, r23, r22       # merge the new HEX1 in the output
     stwio r23, 0(r19)       # store hexcodes in 7display-led (HEX1)
 
     ##########
@@ -70,12 +73,13 @@ Loop:
 
     movia r22, MASK_HEX2    # r22 will hold our current mask
     and r23, r16, r22       # applying the mask to the accumulator
-    srli r23, r23, 16       # moving the value 2 bytes to the RIGHT
+    srli r23, r23, 8        # moving the value 2 bytes to the RIGHT
     add r4, r0, r23         # passing the value as parameter in r4
     call BIN_TO_HEX         # output in r2
-    and r23, r2, r22        # r23 = output masked
-    slli r23, r23, 16       # moving back the converted value to original position (LEFT 2 bytes)
-    add r23, r23, r19       # merge the new HEX2 in the output
+    add r23, r2, r0         # Load only the wanted value
+    slli r23, r23, 16       # moving back the converted value to original position (LEFT 4 bytes)
+    ldw r22, 0(r19)         # put the contents of r19 (value in HEX3-0) in the temp register
+    add r23, r23, r22       # merge the new HEX2 in the output
     stwio r23, 0(r19)       # store hexcodes in 7display-led (HEX2)
 
     ##########
@@ -84,12 +88,13 @@ Loop:
 
     movia r22, MASK_HEX3    # r22 will hold our current mask
     and r23, r16, r22       # applying the mask to the accumulator
-    srli r23, r23, 24       # moving the value 3 bytes to the RIGHT
+    srli r23, r23, 12       # moving the value 3 bytes to the RIGHT
     add r4, r0, r23         # passing the value as parameter in r4
     call BIN_TO_HEX         # output in r2
-    and r23, r2, r22        # r23 = output masked
-    slli r23, r23, 24       # moving back the converted value to original position (LEFT 3 bytes)
-    add r23, r23, r19       # merge the new HEX3 in the output
+    add r23, r2, r0         # Load only the wanted value
+    slli r23, r23, 24       # moving back the converted value to original position (LEFT 6 bytes)
+    ldw r22, 0(r19)         # put the contents of r19 (value in HEX3-0) in the temp register
+    add r23, r23, r22       # merge the new HEX3 in the output
     stwio r23, 0(r19)       # store hexcodes in 7display-led (HEX3)
 
 	br Loop

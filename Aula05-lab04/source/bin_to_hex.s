@@ -29,9 +29,9 @@ BIN_TO_HEX:
     # how to return error? 
     # who need to treat the error: caller or callee?
      
-    movia r8, MASK   /* r8 = MASK */
-    and r8, r4, r8    /* apply a mask to nullify the first 3 bytes */
-                    /* r8 will be our OFFSET */
+    movia r8, MASK   	/* r8 = MASK */
+    and r8, r4, r8      /* apply the mask to nullify the three leftmost bytes */
+                        /* r8 will be our OFFSET */
     movia r9, HEX_CODE_MAP
     add r9, r9, r8		# sum the offset to the base address
                   
