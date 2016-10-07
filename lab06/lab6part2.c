@@ -1,7 +1,7 @@
 /**********************************************
  * Lab 06 - Audio CODEC - sep, 30th, 2016     *
  * Part 2 - Recording and playing audio       *
- * version 0.1 - 10/01/16 (not tested)         *
+ * version 0.1 - 10/01/16 (not tested)        *
  * Authors:                                   *
  * Dalton Lima @daltonbr                      *
  * Giovanna Cazelato @giovannaC               *
@@ -15,7 +15,6 @@
  *  Buffer size calculation                            *
  *  96KHz x 3(sec) = 288 K samples = 0x46500 words     *  
  *  288 K * 4 bytes = 1152 KB = 0x119400 bytes         *
- *  1111 1111 0000 0000 = 0XFF00 //mask FIFO           *
  *	0000 0000 0000 0100 = 0x4    //mask CR             *
  *  0000 0000 0000 1000 = 0x8    //mask CW             *
  ******************************************************/

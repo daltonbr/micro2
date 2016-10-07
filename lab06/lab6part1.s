@@ -3,9 +3,9 @@
  * Part 1 - Recording and playing audio       *
  * version 1.0 - 9/29/16 (not tested)         *
  * Authors:                                   *
- * Dalton Lima r12daltonbr                    *
- * Giovanna Cazelato r12giovannaC             *
- * Lucas Pinheiro r12lucaspin                 *
+ * Dalton Lima @daltonbr                      *
+ * Giovanna Cazelato @giovannaC               *
+ * Lucas Pinheiro @lucaspin                   *
  *********************************************/
  /******************************************************
  *  Audio port IRQ 6                                   *
@@ -49,7 +49,7 @@ WAIT_REC_BUTTON:                        # r12 will always be TEMP register
 	beq r12, r0, WAIT_REC_BUTTON        # if (PB == 0) goto WAIT_REC_BUTTON 
 	stwio r0, 12(r11)	    	        # reset PB 
 	
-/* Reseting buffer */
+/* Reset buffer */
 	ldwio r12, 0(r10)
 	ori r12, r12, CR_mask
 	stwio r12, 0(r10)	    		    # CR = 1
@@ -62,7 +62,7 @@ CHECK_FIFO_EMPTY:
     beq r12, r0, CHECK_FIFO_EMPTY       # while FIFO == 0 loops
     br RECORD
 
-RECORD:                 	            # 3s loop		
+RECORD:
     ldwio r12, 4(r10)    	            # read sample
     stw r12, 0(r8)			            # store sample in memory
     addi r8, r8, 4  		            # advance the memory pointer

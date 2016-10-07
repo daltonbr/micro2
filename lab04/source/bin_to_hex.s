@@ -24,10 +24,6 @@ BIN_TO_HEX:
 	addi fp, sp, 0
 
     /* body */
-
-    # integrity check: input >0 and <15
-    # how to return error? 
-    # who need to treat the error: caller or callee?
      
     movia r8, MASK   	/* r8 = MASK */
     and r8, r4, r8      /* apply the mask to nullify the three leftmost bytes */

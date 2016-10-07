@@ -23,7 +23,7 @@
 
 /*********************************************************************************
 * EXCEPTIONS SECTIONS                                                            *
-* The monitor Program automatically places the ".exceptions"section at the       *
+* The monitor Program automatically places the ".exceptions" section at the      *
 * exception location specified in the CPU settings in SOPC Builder.              *
 * Note: "ax" is REQUIRED to designate the section as allocatable and executable. *
 *********************************************************************************/
@@ -102,7 +102,7 @@ INTERRUPTION_HANDLER:
     add r23, r23, r22       # merge the new HEX3 in the output
     stwio r23, 0(r19)       # store hexcodes in 7display-led (HEX3)
 
-    addi        ea, ea, -4          # return to the last instruction
+    addi    ea, ea, -4          # return to the last instruction (after all Hardware Interruptions we must do this) 
 
     /* write to the PushButton port interruption edge capture register */
     stwio   r0, 12(r11)         # interrupt mask register is (base + 12)
@@ -112,7 +112,7 @@ INTERRUPTION_HANDLER:
 .global _start
 _start:
 
-	movia   sp, 0x50000            # Allocates a valid stack
+	movia   sp, 0x50000         # Allocates a valid stack
 	add     fp, sp, r0
 
 	add     r16, r0, r0                            # reset accumulator

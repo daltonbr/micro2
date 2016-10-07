@@ -7,7 +7,7 @@ SORT:
 	/* tmp = r9 */
 
 	addi sp, sp, -8
-	stw fp, 0(sp)
+	080stw fp, 0(sp)
 	stw ra, 4(sp)
 	addi fp, sp, 0
 
