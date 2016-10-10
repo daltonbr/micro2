@@ -1,7 +1,7 @@
 /***********************************************************
  * Lab 05 - UART and timers - oct, 5th, 2016               *
  * Part 1 - Flashing ascii chars on Altera Monitor Program *
- * version 0.1 - 10/5/16 (not tested)                      *
+ * version 0.2 - 10/10/16 (not tested)                     *
  * Authors:                                                *
  * Dalton Lima @daltonbr                                   *
  * Giovanna Cazelato @giovannaC                            *
@@ -46,7 +46,7 @@ TIMER_LOOP:
 /* Storing Z in the DATA field in the UART Control Register */
     andi    r11, r11, Z
     sthio   r11, 0(r8)                  # store ONLY the LOW halfword
-    br TIMER_LOOP
+    br POLLING_UART
     
 END:
 	br END
