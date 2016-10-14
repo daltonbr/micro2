@@ -30,9 +30,9 @@
 .equ RAVAIL_UART_mask,          0xFF00              # only high halfword (imm16)
 .equ DATA_UART_mask,            0x00FF
 .equ RVALID_UART_mask,          0b1000000000000000  # more visual than 65536 [decimal]  
-.equ UART_BASE_ADDRESS          0x10001000
-.equ TIMER_BASE_ADDRESS         0x10002000
-.equ TIMER_INTERVAL             0x017D7840           # 1/(50 MHz) × (0x17D7840) = 500 msec
+.equ UART_BASE_ADDRESS,         0x10001000
+.equ TIMER_BASE_ADDRESS,        0x10002000
+.equ TIMER_INTERVAL,            0x017D7840           # 1/(50 MHz) × (0x17D7840) = 500 msec
 
     .text                                   # executable code follows
 
