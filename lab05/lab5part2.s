@@ -20,7 +20,7 @@
 .equ WSPACE_UART_mask,          0xFF00              # only high halfword (imm16)
 .equ RAVAIL_UART_mask,          0xFF00              # only high halfword (imm16)
 .equ DATA_UART_mask,            0x00FF
-.equ RVALID_UART_mask,          0b1000000000000000  # more visual than 65536 [decimal]  
+.equ RVALID_UART_mask,          0b1000000000000000  # more visual than 65536 [decimal]  or 0x8000 
 .equ UART_BASE_ADDRESS          0x10001000
 
 .text                                   # executable code follows
