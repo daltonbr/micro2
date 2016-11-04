@@ -1,12 +1,12 @@
 /************************************************************************
  * Lab4 - part4 - Parallel I/O                                          *
  * 7- display segment accumulator (version with interruption)           *
- * Partially Tested, HEX_TO_BIN not returning right value               *
+ * Tested                                                               *
  * Authors:                                                             *
  * Dalton Lima @daltonbr                                                *
  * Giovanna Cazelato @giovannaC                                         *
  * Lucas Pinheiro @lucaspin                                             *
- ***********************************************************************/q
+ ***********************************************************************/
 
 # .equ KEY1,                       0b0010
 .equ MASK_HEX0,                  0x0000000F
