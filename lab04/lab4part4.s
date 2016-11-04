@@ -1,13 +1,12 @@
 /************************************************************************
- * Lab4 - part4 - Parallel I/O                                     *
+ * Lab4 - part4 - Parallel I/O                                          *
  * 7- display segment accumulator (version with interruption)           *
- * Version 2.0 - 2016/10/05
  * Partially Tested, HEX_TO_BIN not returning right value               *
  * Authors:                                                             *
  * Dalton Lima @daltonbr                                                *
  * Giovanna Cazelato @giovannaC                                         *
  * Lucas Pinheiro @lucaspin                                             *
- ***********************************************************************/
+ ***********************************************************************/q
 
 # .equ KEY1,                       0b0010
 .equ MASK_HEX0,                  0x0000000F
@@ -63,7 +62,7 @@ INTERRUPTION_HANDLER:
 
     movia r22, MASK_HEX1    # r22 will hold our current mask
     and r23, r16, r22       # applying the mask to the accumulator
-    srli r23, r23, 4        # moving the value 1 byte to the RIGHT
+    srli r23, r23, 4        # moving the value 4 bits to the RIGHT
     add r4, r0, r23         # passing the value as parameter in r4
     call BIN_TO_HEX         # output in r2
     add r23, r2, r0         # Load only the wanted value
@@ -78,11 +77,11 @@ INTERRUPTION_HANDLER:
 
     movia r22, MASK_HEX2    # r22 will hold our current mask
     and r23, r16, r22       # applying the mask to the accumulator
-    srli r23, r23, 8        # moving the value 2 bytes to the RIGHT
+    srli r23, r23, 8        # moving the value 8 bits to the RIGHT
     add r4, r0, r23         # passing the value as parameter in r4
     call BIN_TO_HEX         # output in r2
     add r23, r2, r0         # Load only the wanted value
-    slli r23, r23, 16       # moving back the converted value to original position (LEFT 4 bytes)
+    slli r23, r23, 16       # moving back the converted value to original position (LEFT 2 bytes)
     ldw r22, 0(r19)         # put the contents of r19 (value in HEX3-0) in the temp register
     add r23, r23, r22       # merge the new HEX2 in the output
     stwio r23, 0(r19)       # store hexcodes in 7display-led (HEX2)
@@ -93,11 +92,11 @@ INTERRUPTION_HANDLER:
 
     movia r22, MASK_HEX3    # r22 will hold our current mask
     and r23, r16, r22       # applying the mask to the accumulator
-    srli r23, r23, 12       # moving the value 3 bytes to the RIGHT
+    srli r23, r23, 12       # moving the value 12 bits to the RIGHT
     add r4, r0, r23         # passing the value as parameter in r4
     call BIN_TO_HEX         # output in r2
     add r23, r2, r0         # Load only the wanted value
-    slli r23, r23, 24       # moving back the converted value to original position (LEFT 6 bytes)
+    slli r23, r23, 24       # moving back the converted value to original position (LEFT 3 bytes)
     ldw r22, 0(r19)         # put the contents of r19 (value in HEX3-0) in the temp register
     add r23, r23, r22       # merge the new HEX3 in the output
     stwio r23, 0(r19)       # store hexcodes in 7display-led (HEX3)
