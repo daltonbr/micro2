@@ -1,7 +1,7 @@
 /***********************************************************
  * Lab 05 - UART and timers - oct, 10th, 2016              *
  * Part 3 - Using the timer                                *
- * version 0.2 - 10/14/16 (not tested)                     *
+ * Writing to the terminal, interrupting, but way too fast *
  * Authors:                                                *
  * Dalton Lima @daltonbr                                   *
  * Giovanna Cazelato @giovannaC                            *
@@ -43,9 +43,9 @@
  * and branching accordingly - JTAG UART or Timer interrupt */
 INTERRUPTION_HANDLER:  
     rdctl       r13, ipending
-    andi        r14, r13, 0b100000000     # mask for Timer interruption
+    andi        r14, r13, 0b1                     # mask for Timer interruption
     bne         r14, r0, TIMER_INTERRUPT    
-    andi        r14, r13, 0b1             # mask for JTAG UART interruption
+    andi        r14, r13, 0b100000000             # mask for JTAG UART interruption
     bne         r14, r0, UART_INTERRUPT
     # check for anything else ? - maybe not an external interruption? 
 
@@ -72,7 +72,7 @@ _start:
     movia       r12, TIMER_INTERVAL         # 1/(50 MHz) × (0x17D7840) = 500 msec
     sthio       r12, 8(r9)                  # store the low halfword of counter (low)...
     srli        r12, r12, 16                # move the high halfword to the low part
-    sthio       r12, 0xC(r9)                # ...and then store it in the the counter (high)
+    sthio       r12, 12(r9)                 # ...and then store it in the the counter (high)
 
 /* start interval timer, enable its interrupts and set it to reload when reach 0 */
     movi        r13, 0b0111                 # START = 1, CONT = 1, ITO = 1
