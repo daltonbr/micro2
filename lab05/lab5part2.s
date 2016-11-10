@@ -9,7 +9,7 @@
  ***********************************************************/
  
 /*********************************************************************************************
- *                          ---=== JTA UART REGISTERS ===---                                 *
+ *                          ---=== JTAG UART REGISTERS ===---                                 *
  * Address    | 31 ... 16 | 15     | 14... 11 | 10 | 9 | 8 | 7 ...| 1 | 0 |                  *
  * 0x10001000 |  RAVAIL   | RAVAIL |        Unused         |     DATA     | Data Register    *
  * 0x10001004 |  WSPACE   |       Unused      | AC | WI|RI |Unuse |WE |RE | Control Register *

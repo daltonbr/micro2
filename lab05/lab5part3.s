@@ -1,6 +1,6 @@
 /***********************************************************
- * Lab 05 - UART and timers - oct, 10th, 2016              *
- * Part 3 - Using the timer                                *
+ * Lab 05 - UART and timers - nov, 10th, 2016              *
+ * Part 3 - Using the timer [tested]                               *
  * Writing to the terminal, interrupting, but way too fast *
  * Authors:                                                *
  * Dalton Lima @daltonbr                                   *
@@ -9,7 +9,7 @@
  ***********************************************************/
  
 /*********************************************************************************************
- *                          ---=== JTA UART REGISTERS ===---                                 *
+ *                          ---=== JTAG UART REGISTERS ===---                                 *
  * Address    | 31 ... 16 | 15     | 14... 11 | 10 | 9 | 8 | 7 ...| 1 | 0 |                  *
  * 0x10001000 |  RAVAIL   | RAVAIL |        Unused         |     DATA     | Data Register    *
  * 0x10001004 |  WSPACE   |       Unused      | AC | WI|RI |Unuse |WE |RE | Control Register *
@@ -34,7 +34,7 @@
 .equ TIMER_BASE_ADDRESS,        0x10002000
 .equ TIMER_INTERVAL,            0x017D7840           # 1/(50 MHz) × (0x17D7840) = 500 msec
 
-    .text                                   # executable code follows
+    .text                                         # executable code follows
 
     .org 0x20
     .global     INTERRUPTION_HANDLER
@@ -49,16 +49,22 @@ INTERRUPTION_HANDLER:
     bne         r14, r0, UART_INTERRUPT
     # check for anything else ? - maybe not an external interruption? 
 
-TIMER_INTERRUPT:
 /* Writing the readed char to the DATA field in the UART Control Register */
+TIMER_INTERRUPT:
+    
+    ldbio       r15, 0(r9)
+    andi        r15, r15, 0b11111110
+    stbio       r15, 0(r9)
     stbio       r10, 0(r8)                  # Writing in the DATA (note: writing into this register
                                             # has no effect on received data) 
-    subi        ea, ea, 4                   # external interrupt must decrement ea, so that the 
-    eret                                    # interrupted instruction will be run after eret
+    br RETURN_FROM_INTERRUPT
     
+/* Reading the character */    
 UART_INTERRUPT:
-    /* Reading the character */
     ldbio       r10, 0(r8)                  # r10 = DATA (1 byte)
+    br RETURN_FROM_INTERRUPT
+
+RETURN_FROM_INTERRUPT:
     subi        ea, ea, 4                   # external interrupt must decrement ea, so that the 
     eret                                    # interrupted instruction will be run after eret
 
@@ -83,6 +89,12 @@ _start:
     wrctl       ienable, r7                 # timer) and #8 (JTAG port) 
     movi        r7, 1
     wrctl       status, r7                  # turn on Nios II interrupt processing
+
+/* enable JTAG uART interrupt for reading (RE) */
+
+    ldbio       r15, 4(r8)
+    ori         r15, r15, 0b00000001
+    sthio       r15, 4(r8)
 
 /* load an initial value to the buffer (r10) */
     movia       r10, 64                     # r10 = '@'
